@@ -1,4 +1,4 @@
-name: Sync Repo B
+name: Mirror Repo A to Repo B
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  sync:
+  mirror:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,30 +17,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Clone Repo B
+      - name: Configure Git
         run: |
-          git clone https://x-access-token:${{ secrets.GH_TOKEN_B }}@github.com/gmeokm01-cmyk/testsyncgithub-fork.git repoB
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Copy files
+      - name: Add Repo B as mirror remote
         run: |
-          rsync -av --delete \
-            --exclude='.git' \
-            ./ repoB/
+          git remote add mirror https://x-access-token:${{ secrets.GH_TOKEN_B }}@github.com/gmeokm01-cmyk/testsyncgithub-fork.git
 
-      - name: Commit and Push
+      - name: Push mirror
         run: |
-          cd repoB
-
-          git config user.name "gmeokm01-cmyk"
-          git config user.email "gmeokm01@gmail.com"
-
-          git add .
-
-          if git diff --cached --quiet; then
-            echo "No changes"
-            exit 0
-          fi
-
-          git commit -m "Sync from Repo A"
-
-          git push origin main
+          git push --mirror mirror
