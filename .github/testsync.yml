@@ -1,0 +1,28 @@
+name: Sync to Repo B
+
+on:
+  push:
+    branches:
+      - main   # Đổi thành master hoặc nhánh khác nếu cần
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to Repo B
+        env:
+          TARGET_TOKEN: ${{ secrets.TARGET_REPO_TOKEN }}
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          git remote add target https://x-access-token:${TARGET_TOKEN}@github.com/gmeokm01-cmyk/testsyncgithub-fork.git
+
+          # Push toàn bộ lịch sử và ghi đè nhánh main của Repo B
+          git push target main --force
